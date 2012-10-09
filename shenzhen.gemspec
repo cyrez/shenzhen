@@ -19,6 +19,7 @@ Gem::Specification.new do |s|
   s.add_dependency "json", "~> 1.7.3"
   s.add_dependency "faraday", "~> 0.8.0"
   s.add_dependency "faraday_middleware", "~> 0.8.7"
+  s.add_dependency "yaml"
 
   s.files         = Dir["./**/*"].reject { |file| file =~ /\.\/(bin|log|pkg|script|spec|test|vendor)/ }
   s.test_files    = `git ls-files -- {test,spec,features}/*`.split("\n")

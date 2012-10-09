@@ -1,1 +1,1 @@
-alias_command :distribute, :'distribute:testflight'
+alias_command :distribute, :'distribute:app-distribution'
