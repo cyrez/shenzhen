@@ -33,21 +33,23 @@ module Shenzhen::Plugins
   end
 end
 
-command :'distribute:app-distribution' do |c|
-  c.syntax = "ipa distribute:app-distribution [options]"
+command :'distribute:kw-app-distribution' do |c|
+  c.syntax = "ipa distribute:kw-app-distribution [options]"
   c.summary = "Distribute an .ipa file over KW App Distribution"
   c.description = ""
   c.option '-f', '--file FILE', ".ipa file for the build"
-  c.option '-a', '--api_token TOKEN', "API Token. Available at https://testflightapp.com/account/#api-token"
-  c.option '-p', '--project_id TOKEN', "Team Token. Available at https://testflightapp.com/dashboard/team/edit/"
+  c.option '-a', '--api_token TOKEN', "API Token."
+  c.option '-i', '--project_id TOKEN', "Team Token. Available at https://app-distribution.herokuapp.com/projects/"
   c.option '-m', '--notes NOTES', "Release notes for the build"
-  c.option '-T', '--build_type', "Build Type (developer or customer)"
+  c.option '-b', '--build_type BUILD_TYPE', "Build Type (developer or customer)"
+  c.option '-x', '--build_version VERSION', "Build Version"
+
   #c.option '--notify', "Notify permitted teammates to install the build"
   #c.option '--replace', "Replace binary for an existing build if one is found with the same name/bundle version"
   c.option '-q', '--quiet', "Silence warning and success messages"
 
-  if Shenzhen::CONFIG && Shenzhen::CONFIG['kw_app_distribution']
-    config = Shenzhen::CONFIG['kw_app_distribution']
+  if Shenzhen::CONFIG && Shenzhen::CONFIG['distribution'] && Shenzhen::CONFIG['distribution']['kw_app_distribution']
+    config = Shenzhen::CONFIG['distribution']['kw_app_distribution']
   else
     config = {}
   end
@@ -60,17 +62,21 @@ command :'distribute:app-distribution' do |c|
     say_error "Missing API Token" and abort unless @api_token
 
     determine_project_id! unless @project_id = options.project_id || config['project_id']
-    
+    say_error "Missing project id" and abort unless @project_id
+
     determine_notes! unless @notes = options.notes
     say_error "Missing release notes" and abort unless @notes
 
     determine_build_type! unless @build_type = options.build_type || config['build_type']
     say_error "Missing build_type" and abort unless @build_type
 
+    determine_version! unless @version = options.build_version || config['version']
+    say_error "Missing version" and abort unless @version
+
     parameters = {}
     parameters[:file] = @file
     parameters[:description] = @notes
-    parameters[:version] = "shezen test"
+    parameters[:version] = @version
     parameters[:build_type] = @build_type
     #parameters[:notify] = "true" if options.notify
     #parameters[:replace] = "true" if options.replace
@@ -98,6 +104,10 @@ command :'distribute:app-distribution' do |c|
 
   def determine_project_id!
     @project_id ||= ask "Project Token:"
+  end
+
+  def determine_version!
+    @version ||= ask "Version:"
   end
 
   def determine_file!

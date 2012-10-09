@@ -8,16 +8,22 @@ command :build do |c|
   c.option '-c', '--configuration CONFIGURATION', 'Configuration used to build'
   c.option '-s', '--scheme SCHEME', 'Scheme used to build app'
   c.option '-q', '--quiet', 'Silence warning and success messages'
+  
+  if Shenzhen::CONFIG && Shenzhen::CONFIG['build']
+    config = Shenzhen::CONFIG['build']
+  else
+    config = {}
+  end
 
   c.action do |args, options|
     validate_xcode_version!
 
     @xcodebuild_info = Shenzhen::XcodeBuild.info
 
-    @workspace = options.workspace
-    @project = options.project
-    @scheme = options.scheme
-    @configuration = options.configuration
+    @workspace = options.workspace || config["workspace"]
+    @project = options.project || config["project"]
+    @scheme = options.scheme || config["scheme"]
+    @configuration = options.configuration || config["configuration"]
 
     determine_workspace_or_project! unless @workspace || @project
 

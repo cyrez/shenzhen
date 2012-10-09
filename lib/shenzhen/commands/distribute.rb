@@ -1,1 +1,1 @@
-alias_command :distribute, :'distribute:app-distribution'
+alias_command :distribute, :'distribute:kw-app-distribution'
