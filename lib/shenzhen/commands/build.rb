@@ -27,9 +27,16 @@ command :build do |c|
 
     determine_workspace_or_project! unless @workspace || @project
 
-    determine_configuration! unless @configuration
-    say_error "Configuration #{@configuration} not found" and abort unless @xcodebuild_info.build_configurations.include?(@configuration)
-
+    if @workspace
+      unless @configuration
+        say_warning "Configuration was not passed, defaulting to Debug" unless @configuration
+        @configuration = "Debug"
+      end
+    else
+      determine_configuration! unless @configuration
+      say_error "Configuration #{@configuration} not found" and abort unless @xcodebuild_info.build_configurations.include?(@configuration)
+    end
+    
     determine_scheme! unless @scheme
     say_error "Scheme #{@scheme} not found" and abort unless @xcodebuild_info.schemes.include?(@scheme)
 
@@ -45,16 +52,19 @@ command :build do |c|
     flags << "-configuration #{@configuration}"
 
     ENV['CC'] = nil # Fix for RVM
-    abort unless system "xcodebuild #{flags.join(' ')} clean build 1> /dev/null"
+    abort unless system %{xcodebuild #{flags.join(' ')} clean build 1> /dev/null}
 
     log "xcrun", "PackageApplication"
     
     @xcodebuild_settings = Shenzhen::XcodeBuild.settings(flags)
-
     @app_path = File.join(@xcodebuild_settings['BUILT_PRODUCTS_DIR'], @xcodebuild_settings['PRODUCT_NAME']) + ".app"
     @dsym_path = @app_path + ".dSYM"
+    @dsym_filename = "#{@xcodebuild_settings['PRODUCT_NAME']}.app.dSYM"
     @ipa_path = File.join(Dir.pwd, @xcodebuild_settings['PRODUCT_NAME']) + ".ipa"
     abort unless system %{xcrun -sdk iphoneos PackageApplication -v "#{@app_path}" -o "#{@ipa_path}" --embed "#{@dsym_path}" 1> /dev/null}
+
+    log "zip", @dsym_filename
+    abort unless system %{cp -r "#{@dsym_path}" . && zip -r "#{@dsym_filename}.zip" "#{@dsym_filename}" >/dev/null && rm -rf "#{@dsym_filename}"}
 
     say_ok "#{File.basename(@ipa_path)} successfully built" unless options.quiet
   end
