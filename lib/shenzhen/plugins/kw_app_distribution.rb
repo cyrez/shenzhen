@@ -41,7 +41,7 @@ command :'distribute:kw-app-distribution' do |c|
   c.option '-a', '--api_token TOKEN', "API Token."
   c.option '-i', '--project_id TOKEN', "Team Token. Available at https://app-distribution.herokuapp.com/projects/"
   c.option '-m', '--notes NOTES', "Release notes for the build"
-  c.option '-b', '--build_type BUILD_TYPE', "Build Type (developer or customer)"
+  c.option '-l', '--tag_list TAG_LIST', "Build Type i.e. customer or internal"
   c.option '-x', '--build_version VERSION', "Build Version"
 
   #c.option '--notify', "Notify permitted teammates to install the build"
@@ -67,8 +67,7 @@ command :'distribute:kw-app-distribution' do |c|
     determine_notes! unless @notes = options.notes
     say_error "Missing release notes" and abort unless @notes
 
-    determine_build_type! unless @build_type = options.build_type || config['build_type']
-    say_error "Missing build_type" and abort unless @build_type
+    determine_tag_list! unless @tag_list = options.tag_list || config['tag_list']
 
     determine_version! unless @version = options.build_version || config['version']
     say_error "Missing version" and abort unless @version
@@ -77,7 +76,7 @@ command :'distribute:kw-app-distribution' do |c|
     parameters[:file] = @file
     parameters[:description] = @notes
     parameters[:version] = @version
-    parameters[:build_type] = @build_type
+    parameters[:tag_list] = @tag_list
     #parameters[:notify] = "true" if options.notify
     #parameters[:replace] = "true" if options.replace
     #parameters[:distribution_lists] = options.lists if options.lists
@@ -94,8 +93,8 @@ command :'distribute:kw-app-distribution' do |c|
 
   private
 
-  def determine_build_type!
-    @build_type ||= ask "Build Type (customer|developer):"
+  def determine_tag_list!
+    @tag_list ||= ask "Build Type i.e. customer, internal"
   end
 
   def determine_api_token!
