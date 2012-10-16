@@ -1,7 +1,7 @@
 require 'yaml'
 
 module Shenzhen
-  VERSION = '0.0.5'
+  VERSION = '0.0.6'
 
   config_path = "#{Dir.pwd}/config.yml"
   if File.exist?(config_path)
